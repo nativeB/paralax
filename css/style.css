@@ -48,7 +48,7 @@ video {
 	padding-right: 15px;
 	padding-left: 15px;
 	padding-bottom: 15px;
-	width: 150px;
+	width: 15vw;
 	color: white;
 	margin: 10px;
 	text-align: center;
@@ -57,7 +57,7 @@ video {
 }
 h1{
 	font-weight:200;
-	font-size: 10em;
+	font-size: 20vw;
 	color: #ef476f
 }
 
@@ -237,5 +237,6 @@ i{
 }
 a,button{
     cursor: pointer;
+    font-size:3vw;
 }
 

@@ -179,6 +179,12 @@ background-color: #ffd166;
 .hang {
     background-color: #e74c3c;
 }
+.off {
+    color: #e74c3c;
+}
+i{
+	cursor:pointer;
+}
 .circle {
     width: 50px;
     height: 50px;

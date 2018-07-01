@@ -35,6 +35,9 @@ const hangUpBtn = document.querySelector('#hangupBtn');
 const localVideo = document.querySelector('#localVideo');
 const roomInput = document.querySelector('#room');
 let yourConn = {};
+const audioBtn=document.querySelector('#audio');
+const speakerBtn=document.querySelector('#speaker');
+
 let stream;
 
 log.style.display = 'none';
@@ -198,6 +201,40 @@ function doforothers(myStream) {
     }
 }
 
+
+
+audioBtn.addEventListener('click',function () {
+    toggleaudio(stream)
+    this.classList.toggle('fa-microphone-slash');
+    this.classList.toggle('fa-microphone');
+    this.classList.toggle('off');
+})
+speakerBtn.addEventListener('click',function () {
+    togglespeaker()
+    this.classList.toggle('fa-volume-up');
+    this.classList.toggle('fa-volume-off');
+    this.classList.toggle('off');
+})
+function togglespeaker(){
+    let speakers=document.getElementsByTagName('video')
+    for(i = 0;i < speakers.length; i++)
+    {
+        if(speakers[i].id !=='localVideo') speakers[i].muted=!speakers[i].muted
+
+    }
+}
+
+function toggleaudio(localstream) {
+    //toggling track
+    localstream.getAudioTracks()[0].enabled=!localstream.getAudioTracks()[0].enabled;
+//    sending a message
+    console.log('audio ')
+
+}
+
+
+
+
 function newuser(user) {
 //**********************
     //Starting a peer connection
@@ -218,7 +255,7 @@ function newuser(user) {
         let divs = document.getElementById('videos');
         console.log('Remote stream added.');
         let video = document.createElement('video')
-        video.src = window.URL.createObjectURL(e.stream);
+        video.srcObject=e.stream;
         video.autoplay = true;
         video.id = user;
         video.setAttribute('webkit-playsinline', 'webkit-playsinline');
@@ -279,7 +316,8 @@ function handleOffer(offer, name, id) {
     }, error => {
         alert("Error when creating an answer");
     });
-};
+}
+
 
 //when we got an answer from a remote user
 function handleAnswer(answer, name, id) {

@@ -2,6 +2,7 @@
 let os = require('os');
 let nodeStatic = require('node-static');
 let https = require('https');
+const PORT = process.env.PORT || 5000;
 let fs=require('fs');
 let socketIO = require('socket.io');
 const options = {
@@ -12,7 +13,7 @@ const rooms={};
 const fileServer = new(nodeStatic.Server)();
 const app = https.createServer(options,(req, res) => {
     fileServer.serve(req, res);
-}).listen(9090);
+}).listen(PORT);
 
 const io = socketIO.listen(app);
 

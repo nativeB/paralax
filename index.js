@@ -1,17 +1,13 @@
 
 let os = require('os');
 let nodeStatic = require('node-static');
-let https = require('https');
+let http = require('http');
 const PORT = process.env.PORT || 5000;
 let fs=require('fs');
 let socketIO = require('socket.io');
-const options = {
-    key: fs.readFileSync('auth/key.pem', 'utf8'),
-    cert: fs.readFileSync('auth/server.crt', 'utf8')
-};
 const rooms={};
 const fileServer = new(nodeStatic.Server)();
-const app = https.createServer(options,(req, res) => {
+const app = http.createServer((req, res) => {
     fileServer.serve(req, res);
 }).listen(PORT);
 

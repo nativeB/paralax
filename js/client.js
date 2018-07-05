@@ -53,10 +53,6 @@ socket.on('connect', () => {
 })
 
 socket.on('login', data => {
-    landing.style.display = 'none';
-    log.style.display = 'none';
-    nav.style.display = 'flex';
-    main.style.display = 'flex';
     logger(data)
     handleLogin(data);
 });
@@ -150,7 +146,10 @@ function handleLogin(data) {
     if (data.success === false) {
         alert("Ooops...try a different username");
     } else {
-
+		 landing.style.display = 'none';
+		 log.style.display = 'none';
+		 nav.style.display = 'flex';
+		 main.style.display = 'flex';
         console.log('runnin')
         console.log('tryin', room)
         if (room.url) {

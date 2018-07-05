@@ -410,6 +410,10 @@ function launchIntoFullscreen(element) {
     fullscreen = true
 }
 
+window.onbeforeunload = function() {
+    socket.emit('close',{ token: window.location.hash.substring(1)})
+ };
+
 //on msg
 function logger(log) {
     console.log(log)

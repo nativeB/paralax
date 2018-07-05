@@ -154,9 +154,9 @@ io.sockets.on('connection', socket => {
 
     //when user exits, for example closes a browser window
     //this may help if we are still in "offer","answer" or "candidate" state
-    socket.on("close", () => {
-        // socket.broadcast.to(data.token).emit('leave', socket.id);
-        // socket.leave(data.token)
+    socket.on("close", (data) => {
+         socket.broadcast.to(data.token).emit('leave', socket.id);
+         socket.leave(data.token)
 
     })
 })

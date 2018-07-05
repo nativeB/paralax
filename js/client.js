@@ -1,8 +1,8 @@
-let room = {}
+let room = {};
 
 //check if id is provided
-room.id = window.location.hash.substring(1);
-if (room.id !== "") {
+room.token = window.location.hash.substring(1);
+if (room.token !== "") {
     console.log(room);
     room.url = true
 }
@@ -11,7 +11,7 @@ let connectedUser;
 //username
 let name;
 let fullscreen;
-var type;
+let type;
 //connecting to our signaling server
 const socket = io.connect();
 let unconnected = []
@@ -21,22 +21,24 @@ let unconnected = []
 //UI selectors block
 //******
 
-var main = document.querySelector('.main')
-var nav = document.querySelector('.nav')
-var landing = document.querySelector('.landing')
-var landcon = document.querySelector('#con');
-var landweb = document.querySelector('#web');
-var land = document.querySelector('.btns');
-var log = document.querySelector('.login');
-var full = document.querySelector('#full')
+const main = document.querySelector('.main');
+const nav = document.querySelector('.nav');
+const landing = document.querySelector('.landing');
+const landcon = document.querySelector('#con');
+const landweb = document.querySelector('#web');
+const land = document.querySelector('.btns');
+const log = document.querySelector('.login');
+const full = document.querySelector('#full');
 const usernameInput = document.querySelector('#usernameInput');
 const loginBtn = document.querySelector('#loginBtn');
 const hangUpBtn = document.querySelector('#hangupBtn');
 const localVideo = document.querySelector('#localVideo');
 const roomInput = document.querySelector('#room');
 let yourConn = {};
-const audioBtn=document.querySelector('#audio');
-const speakerBtn=document.querySelector('#speaker');
+const audioBtn = document.querySelector('#audio');
+const speakerBtn = document.querySelector('#speaker');
+const conname = document.querySelector('.nav-title');
+const conlink = document.querySelector('#sharelink');
 
 let stream;
 
@@ -79,9 +81,13 @@ socket.on('joined', data => {
 });
 socket.on('join', data => {
     join(data)
+    conname.innerHTML="Paralax/ "+data[0];
+    conlink.innerHTML= window.location.href;
 });
 socket.on('created', data => {
     console.log('created :', data[0])
+    conname.innerHTML="Paralax/ "+data[0];
+    conlink.innerHTML= window.location.href+ data[2];
     window.location.hash = data[2]
     getstream(doforcreator)
 });
@@ -94,7 +100,7 @@ socket.on('error', (error) => {
 function send(on, message) {
     //attach the other peer username to our messages
     if (connectedUser) {
-        message.name = connectedUser;
+        message.id = connectedUser;
 
     }
 
@@ -103,7 +109,7 @@ function send(on, message) {
 
 
 //event listeners
-landcon.addEventListener('click', function () {
+landcon.addEventListener('click', () => {
     // type = "con"
     land.style.display = 'none';
     log.style.display = 'flex';
@@ -112,15 +118,13 @@ landcon.addEventListener('click', function () {
     }
 });
 
-landweb.addEventListener('click', function () {
-    // type = "web"
-    // land.style.display = 'none';
-    // log.style.display = 'flex';
-    //todo implement one way calling for webinar
-    return false
-})
+landweb.addEventListener('click', () => // type = "web"
+// land.style.display = 'none';
+// log.style.display = 'flex';
+//todo implement one way calling for webinar
+    false)
 
-full.addEventListener('click', function () {
+full.addEventListener('click', () => {
     if (fullscreen) exitFullscreen(document.documentElement)
     else launchIntoFullscreen(document.documentElement);
 })
@@ -148,11 +152,10 @@ function handleLogin(data) {
     } else {
 
         console.log('runnin')
-        socket.myname = name
         console.log('tryin', room)
         if (room.url) {
-            send('create or join', {token: room.token})
-        } else send('create or join', {roomie: room, token: randomToken()})
+            send('create or join', room)
+        } else send('create or join', {name: room, token: randomToken()})
     }
 }
 
@@ -188,6 +191,7 @@ function doforcreator(myStream) {
     stream = myStream;
     //displaying local video stream on the page
     localVideo.srcObject = stream;
+
 }
 
 function doforothers(myStream) {
@@ -202,37 +206,34 @@ function doforothers(myStream) {
 }
 
 
-
-audioBtn.addEventListener('click',function () {
+audioBtn.addEventListener('click', function () {
     toggleaudio(stream)
     this.classList.toggle('fa-microphone-slash');
     this.classList.toggle('fa-microphone');
     this.classList.toggle('off');
 })
-speakerBtn.addEventListener('click',function () {
+speakerBtn.addEventListener('click', function () {
     togglespeaker()
     this.classList.toggle('fa-volume-up');
     this.classList.toggle('fa-volume-off');
     this.classList.toggle('off');
 })
-function togglespeaker(){
-    let speakers=document.getElementsByTagName('video')
-    for(i = 0;i < speakers.length; i++)
-    {
-        if(speakers[i].id !=='localVideo') speakers[i].muted=!speakers[i].muted
+
+function togglespeaker() {
+    let speakers = document.getElementsByTagName('video')
+    for (i = 0; i < speakers.length; i++) {
+        if (speakers[i].id !== 'localVideo') speakers[i].muted = !speakers[i].muted
 
     }
 }
 
 function toggleaudio(localstream) {
     //toggling track
-    localstream.getAudioTracks()[0].enabled=!localstream.getAudioTracks()[0].enabled;
+    localstream.getAudioTracks()[0].enabled = !localstream.getAudioTracks()[0].enabled;
 //    sending a message
     console.log('audio ')
 
 }
-
-
 
 
 function newuser(user) {
@@ -255,9 +256,9 @@ function newuser(user) {
         let divs = document.getElementById('videos');
         console.log('Remote stream added.');
         let video = document.createElement('video')
-        video.srcObject=e.stream;
+        video.srcObject = e.stream;
         video.autoplay = true;
-        video.id = user;
+        video.className = user;
         video.setAttribute('webkit-playsinline', 'webkit-playsinline');
         divs.appendChild(video);
         if (unconnected.length > 0) {
@@ -312,7 +313,10 @@ function handleOffer(offer, name, id) {
 
         send("answer",
             {token: window.location.hash.substring(1), answer});
-
+        let adduser = document.createElement('a');
+        adduser.innerHTML = name;
+        adduser.className = connectedUser;
+        document.getElementById('mySidenav').appendChild(adduser);
     }, error => {
         alert("Error when creating an answer");
     });
@@ -323,6 +327,10 @@ function handleOffer(offer, name, id) {
 function handleAnswer(answer, name, id) {
     console.log('setremote', connectedUser, yourConn[connectedUser])
     yourConn[id].setRemoteDescription(new RTCSessionDescription(answer));
+    let adduser = document.createElement('a');
+    adduser.innerHTML = name;
+    adduser.className = connectedUser;
+    document.getElementById('mySidenav').appendChild(adduser);
 };
 
 //when we got an ice candidate from a remote user
@@ -343,15 +351,24 @@ function handleLeave() {
     connectedUser = null;
     unconnected = null
     yourConn = null
-    var myNode = document.getElementById("videos");
+    conname.innerHTML="Paralax";
+    conlink.innerHTML=''
+    const myNode = document.getElementById("videos");
+    const myNodelist = document.getElementById("mySidenav");
     while (myNode.firstChild) {
+        myNodelist.removeChild(myNodelist.lastChild);
         myNode.removeChild(myNode.firstChild);
     }
-
 }
 
 function userleave(id) {
-    document.getElementById(id).remove()
+    console.log('removing', id);
+    const remove = document.getElementsByClassName(id);
+    console.log('f', remove[1])
+    for (i = 0; i <= remove.length; i++) {
+        // console.log(remove[i],i)
+        remove[0].remove();
+    }
     yourConn[id] = null
 
 }

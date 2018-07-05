@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>paralax</title>
-    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link href="style.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 </head>
 
@@ -18,6 +18,10 @@
     </div>
 
     <a id="full" class="btn" style="border-radius: 0;margin:0;">Go Full Screen</a>
+        <a id="sharelink"  style="border-radius: 0;margin-top:10px;margin-left: 90px; color: #3498db;">
+
+        </a>
+    <p style="margin-top:10px;">   : share to all participants</p>
 
 
 </div>
@@ -50,19 +54,18 @@
 
     </div>
     <div id="videos">
-
     </div>
     <div class="media">
-        <video id="localVideo" autoplay></video>
-         <i class="fa fa-microphone fa-lg" id="audio" style="padding-top: 120px; padding-right:2px; "></i>
+        <video id="localVideo" autoplay muted></video>
+        <i class="fa fa-microphone fa-lg" id="audio" style="padding-top: 120px; padding-right:2px; "></i>
         <i class="fas fa-volume-up fa-lg" id="speaker" style="padding-top: 120px;padding-left: 2px;" ></i>
         <!--<i class="fas fa-volume-off"></i>-->
 
     </div>
 </div>
-<script src="js/adapter-latest.js"></script>
+<script src="adapter-latest.js"></script>
 <!-- This file is automatically added/served when running "node index.js". -->
 <script src="/socket.io/socket.io.js"></script>
-<script type="application/javascript" src="js/client.js"></script>
+<script type="application/javascript" src="client_new.js"></script>
 </body>
 </html>

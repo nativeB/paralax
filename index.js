@@ -15,11 +15,13 @@ const io = socketIO.listen(app);
 
 //all connected to the server users
 const users = {};
+
 //logging
 function log() {
     console.log(arguments);
 
 }
+
 
 //when a user connects to our sever
 io.sockets.on('connection', socket => {
@@ -38,7 +40,7 @@ io.sockets.on('connection', socket => {
             users[data.name] = socket;
             socket.name = data.name;
 
-            sendTo(socket,"login",
+            sendTo(socket, "login",
                 {success: true}
             );
         }
@@ -46,39 +48,46 @@ io.sockets.on('connection', socket => {
 
 
     socket.on('create or join', room => {
-        if(rooms[room.name] !== undefined ) {
+
+        console.log('received create or join request ', room)
+        if (rooms[room.name] !== undefined) {
+            console.log('existing rooms:', io.sockets.adapter.rooms)
             const clientsInRoom = io.sockets.adapter.rooms[rooms[room.name]];
+            console.log('room members', clientsInRoom)
             const numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
-            log(`Room ${room.roomie} now has ${numClients} client(s)`);
+            console.log('number:', numClients)
+            // log(`Room ${room.roomie} now has ${numClients} client(s)`);
             if (numClients === 0) {
                 socket.join(rooms[room.name]);
-                log(`Client ID ${socket.id} created room ${room.roomie}`);
-                socket.emit('created', [room.roomie, socket.id, rooms[room.name]]);
+                // log(`Client ID ${socket.id} created room ${room.roomie}`);
+                socket.emit('created', [room.name, socket.id, rooms[room.name]]);
 
             } else {
                 socket.join(rooms[room.name]);
+                console.log('members:', Object.keys(clientsInRoom.sockets))
                 sendTo(socket, 'join', {
                     success: true,
                     members: Object.keys(clientsInRoom.sockets),
-                    token:rooms[room.name]
+                    token: rooms[room.name]
                 })
-                socket.broadcast.emit('joined', room.roomie);
+
+                socket.broadcast.emit('joined', room.name);
 
             }
-        }else {
-            if(room.url){
+        } else {
+            if (room.url) {
                 socket.join(room.token);
                 sendTo(socket, 'join', {
                     success: true,
                     members: Object.keys(io.sockets.adapter.rooms[room.token]['sockets']),
-                    token:room.token
+                    token: room.token
                 })
                 socket.broadcast.emit('joined', room.token);
-            }else {
+            } else {
                 socket.join(room.token);
-                log(`Client ID ${socket.id} created room ${room.roomie}`);
+                log(`Client ID ${socket.id} created room ${room.name}`);
                 console.log('room', io.sockets.adapter.rooms)
-                socket.emit('created', [room.roomie, socket.id, room.token]);
+                socket.emit('created', [room.name, socket.id, room.token]);
                 rooms[room.name] = room.token
             }
         }
@@ -86,92 +95,72 @@ io.sockets.on('connection', socket => {
 
     socket.on('offer', data => {
         //for ex. UserA wants to call UserB
-        console.log("Sending offer to: ", data.name);
+        console.log("Sending offer to: ", data.id);
 
         //if UserB exists then send him offer details
-        const conn =Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.name);
-        console.log(conn,data.token)
-
+        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.id);
+        console.log(conn, data.token)
 
 
         if (conn !== -1) {
             //setting that UserA connected with UserB
-            socket.to(data.name).emit("offer",
-                {offer: data.offer,
-                    name: socket.name,
-                    otherpeerid:socket.id,
-                    otherpeer: data.otherpeer}
+            socket.to(data.id).emit("offer",
+                {
+                    offer: data.offer,
+                    otherpeerid: socket.id,
+                    otherpeer: socket.name
+                }
             );
         }
 
     })
     socket.on('answer', data => {
-        console.log("Sending answer to: ", data.name);
+        console.log("Sending answer to: ", data.id);
         //for ex. UserB answers UserA
-        console.log(data.name)
-        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.name);
+        console.log(data.id)
+        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.id);
 
         if (conn !== -1) {
-            socket.to(data.name).emit("answer",
-                {answer: data.answer,
-                    otherpeerid:socket.id,
-                    otherpeer: data.otherpeer}
+            socket.to(data.id).emit("answer",
+                {
+                    answer: data.answer,
+                    otherpeerid: socket.id,
+                    otherpeer: socket.name
+                }
             );
         }
 
     })
     socket.on('candidate', data => {
-        console.log("Sending candidate to:", data.name);
-        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.name);
+        console.log("Sending candidate to:", data.id);
+        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.id);
 
         if (conn !== -1) {
-            socket.to(data.name).emit("candidate",
-                { candidate: data.candidate,
-                    otherpeerid:socket.id,
-                    otherpeer: data.otherpeer
+            socket.to(data.id).emit("candidate",
+                {
+                    candidate: data.candidate,
+                    otherpeerid: socket.id,
                 });
         }
     })
     socket.on('leave', data => {
-        console.log("Disconnecting from", );
-        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.name);
-
-
-
+        console.log("Disconnecting from", socket.id);
+        // const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.id);
         //notify the other user so he can disconnect his peer connection
-        if (conn != null) {
-        socket.broadcast.emit("leave",socket.id);
-        }
-
+        socket.broadcast.to(data.token).emit('leave', socket.id);
+        socket.leave(data.token)
     })
 
 
     //when user exits, for example closes a browser window
     //this may help if we are still in "offer","answer" or "candidate" state
     socket.on("close", () => {
-        const conn = Object.keys(io.sockets.adapter.rooms[data.token]['sockets']).indexOf(data.name);
-
-        if (socket.name) {
-            delete users[socket.name];
-
-            if (socket.otherName) {
-                console.log("Disconnecting from ", socket.otherName);
-                const conn = users[socket.otherpeer];
-
-
-                if (conn != null) {
-                    sendTo(conn, {
-                        type: "leave"
-                    });
-                }
-            }
-        }
-
+        // socket.broadcast.to(data.token).emit('leave', socket.id);
+        // socket.leave(data.token)
 
     })
 })
 
-function sendTo(socket,on, message) {
-    if(on==='leave') socket.broadcast.emit(on,message)
-    else socket.emit(on,message);
+function sendTo(socket, on, message) {
+    socket.emit(on, message);
 }

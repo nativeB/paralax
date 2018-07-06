@@ -149,6 +149,7 @@ io.sockets.on('connection', socket => {
         //notify the other user so he can disconnect his peer connection
         socket.broadcast.to(data.token).emit('leave', socket.id);
         socket.leave(data.token)
+		delete users[socket.name]
     })
 
 
@@ -157,6 +158,7 @@ io.sockets.on('connection', socket => {
     socket.on("close", (data) => {
          socket.broadcast.to(data.token).emit('leave', socket.id);
          socket.leave(data.token)
+		 delete users[socket.name]
 
     })
 })

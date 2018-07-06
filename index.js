@@ -1,4 +1,3 @@
-
 let os = require('os');
 let nodeStatic = require('node-static');
 let http = require('http');
@@ -10,6 +9,7 @@ const fileServer = new(nodeStatic.Server)();
 const app = http.createServer((req, res) => {
     fileServer.serve(req, res);
 }).listen(PORT);
+
 
 const io = socketIO.listen(app);
 
@@ -48,7 +48,6 @@ io.sockets.on('connection', socket => {
 
 
     socket.on('create or join', room => {
-
         console.log('received create or join request ', room)
         if (rooms[room.name] !== undefined) {
             console.log('existing rooms:', io.sockets.adapter.rooms)
@@ -61,11 +60,11 @@ io.sockets.on('connection', socket => {
                 socket.join(rooms[room.name]);
                 // log(`Client ID ${socket.id} created room ${room.roomie}`);
                 socket.emit('created', [room.name, socket.id, rooms[room.name]]);
-
             } else {
                 socket.join(rooms[room.name]);
                 console.log('members:', Object.keys(clientsInRoom.sockets))
                 sendTo(socket, 'join', {
+                    name:room.name,
                     success: true,
                     members: Object.keys(clientsInRoom.sockets),
                     token: rooms[room.name]
@@ -78,6 +77,7 @@ io.sockets.on('connection', socket => {
             if (room.url) {
                 socket.join(room.token);
                 sendTo(socket, 'join', {
+                    members:room.name,
                     success: true,
                     members: Object.keys(io.sockets.adapter.rooms[room.token]['sockets']),
                     token: room.token
@@ -149,16 +149,16 @@ io.sockets.on('connection', socket => {
         //notify the other user so he can disconnect his peer connection
         socket.broadcast.to(data.token).emit('leave', socket.id);
         socket.leave(data.token)
-		delete users[socket.name]
+        delete users[socket.name]
     })
 
 
     //when user exits, for example closes a browser window
     //this may help if we are still in "offer","answer" or "candidate" state
     socket.on("close", (data) => {
-         socket.broadcast.to(data.token).emit('leave', socket.id);
-         socket.leave(data.token)
-		 delete users[socket.name]
+        socket.broadcast.to(data.token).emit('leave', socket.id);
+        socket.leave(data.token)
+        delete users[socket.name]
 
     })
 })

@@ -77,7 +77,7 @@ socket.on('joined', data => {
 });
 socket.on('join', data => {
     join(data)
-    conname.innerHTML="Paralax/ "+data[0];
+    conname.innerHTML="Paralax/ "+data.name;
     conlink.innerHTML= window.location.href;
 });
 socket.on('created', data => {
@@ -146,10 +146,10 @@ function handleLogin(data) {
     if (data.success === false) {
         alert("Ooops...try a different username");
     } else {
-		 landing.style.display = 'none';
-		 log.style.display = 'none';
-		 nav.style.display = 'flex';
-		 main.style.display = 'flex';
+        landing.style.display = 'none';
+        log.style.display = 'none';
+        nav.style.display = 'flex';
+        main.style.display = 'flex';
         console.log('runnin')
         console.log('tryin', room)
         if (room.url) {
@@ -411,7 +411,7 @@ function launchIntoFullscreen(element) {
 
 window.onbeforeunload = function() {
     socket.emit('close',{ token: window.location.hash.substring(1)})
- };
+};
 
 //on msg
 function logger(log) {
